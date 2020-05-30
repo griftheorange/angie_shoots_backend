@@ -7,7 +7,14 @@ class ImagesController < ApplicationController
     end
 
     def create
-        puts(getPermanentURL(params['file'].tempfile))
+        # puts(getPermanentURL(params['file'].tempfile)['url'])
+        @images = Image.all
+        render json: @images
+    end
+
+    def test
+        puts params['files'].map{|file| file.tempfile}
+        puts params['filenames']
         @images = Image.all
         render json: @images
     end
