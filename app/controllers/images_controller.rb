@@ -1,4 +1,5 @@
 require 'rest-client'
+require 'fastimage'
 
 class ImagesController < ApplicationController
     def index
@@ -7,15 +8,18 @@ class ImagesController < ApplicationController
     end
 
     def create
-        # puts(getPermanentURL(params['file'].tempfile)['url'])
-        @images = Image.all
-        render json: @images
-    end
-
-    def test
-        puts params['files'].map{|file| file.tempfile}
-        puts params['filenames']
-        @images = Image.all
+        @images = []
+        params['files'].each_with_index { |file, index| 
+            route = getPermanentURL(file)
+            if route
+                image = Image.create({
+                    :title => params['filenames'][index],
+                    :route => route
+                })
+                @images.append(image)
+            end
+        }
+        
         render json: @images
     end
 
@@ -23,6 +27,7 @@ class ImagesController < ApplicationController
 
     def getPermanentURL(file)
         auth = Rails.application.credentials.cloudinary
-        return Cloudinary::Uploader.upload(file, auth)
+        maxCloudinarySize = 10485760
+        return Cloudinary::Uploader.upload(file, auth)['url']
     end
 end
